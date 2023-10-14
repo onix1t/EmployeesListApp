@@ -2,6 +2,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk
 
+# создаине интерфейса программы
 class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
@@ -9,21 +10,23 @@ class Main(tk.Frame):
         self.db = db
         self.view_records()
 
-    def init_main(self):
+    def init_main(self): 
         toolbar = tk.Frame(bg="#d7d8e0", bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
         
-        self.add_img = tk.PhotoImage(file="./img/add.png", height=50, width=50)
-        btn_open_win = tk.Button(
+        # кнопка добавления
+        self.add_img = tk.PhotoImage(file="./img/add.png", height=50, width=50) 
+        btn_open_add_win = tk.Button(
             toolbar, 
             bg="#d7d8e0", 
             bd=0, 
             image=self.add_img, 
             command=self.open_add_win
         )
-        btn_open_win.pack(side=tk.LEFT)
+        btn_open_add_win(side=tk.LEFT)
 
-        self.update_img = tk.PhotoImage(file="./img/update.png", height=50, width=50)
+        # кнопка обновления
+        self.update_img = tk.PhotoImage(file="./img/update.png", height=50, width=50) 
         btn_edit_win = tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -32,8 +35,9 @@ class Main(tk.Frame):
             command=self.open_update_win,
         )
         btn_edit_win.pack(side=tk.LEFT)
-
-        self.search_img = tk.PhotoImage(file="./img/search.png", height=50, width=50)
+        
+        # кнопка поиска
+        self.search_img = tk.PhotoImage(file="./img/search.png", height=50, width=50) 
         btn_search_win= tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -43,7 +47,8 @@ class Main(tk.Frame):
         )
         btn_search_win.pack(side=tk.LEFT)
 
-        self.delete_img = tk.PhotoImage(file="./img/delete.png", height=50, width=50)
+        # кнопка удаления
+        self.delete_img = tk.PhotoImage(file="./img/delete.png", height=50, width=50) # кнопка удаления
         btn_delete = tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -53,6 +58,7 @@ class Main(tk.Frame):
         )
         btn_delete.pack(side=tk.RIGHT)
 
+        # вывод через виджет Treeview
         self.tree = ttk.Treeview(
             self, 
             columns=("ID", "name", "phone", "email", "salary"),
@@ -60,7 +66,8 @@ class Main(tk.Frame):
             show="headings"
         )
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH)
-
+        
+        # полоса прокрутки
         self.scroll = ttk.Scrollbar(
             self, 
             orient="vertical", 
@@ -70,6 +77,7 @@ class Main(tk.Frame):
 
         self.tree.configure(yscrollcommand=self.scroll.set)
 
+        # столбцы таблтцы базы данных
         self.tree.column("ID", width=30, anchor=tk.CENTER)
         self.tree.column("name", width=225, anchor=tk.CENTER)
         self.tree.column("phone", width=150, anchor=tk.CENTER)
@@ -82,7 +90,7 @@ class Main(tk.Frame):
         self.tree.heading("email", text="E-mail")
         self.tree.heading("salary", text="Зарплата")
 
-
+    # считывание и добавление данных
     def records(self, name, phone, email, salary):
         self.db.insert_data(name, phone, email, salary)
         self.view_records()
@@ -124,14 +132,14 @@ class Main(tk.Frame):
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
 
-
+# создание окна функции добавления
 class Add(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.init_add()
+        self.init_child()
 
-    def init_add(self):
+    def init_child(self):
         self.title("Добавление контакта")
         self.geometry("400x220")
         self.resizable(False, False)
@@ -163,7 +171,6 @@ class Add(tk.Toplevel):
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=205, y=160)
 
-
         self.btn_add.bind(
             "<Button-1>",
             lambda event: self.parent.records(
@@ -172,11 +179,12 @@ class Add(tk.Toplevel):
             ),
         )
 
+# создание окна функции редактирования
 class Update(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.parent = parent
         self.init_edit()
+        self.default_data()
 
     def init_edit(self):
         self.title("Редактирование контакта")
@@ -207,7 +215,7 @@ class Update(tk.Toplevel):
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=220, y=160)
 
-        btn_edit = ttk.Button(self, text="Редактировать", command=self.destroy)
+        btn_edit = ttk.Button(self, text="Редактировать")
         btn_edit.place(x=125, y=160)
         btn_edit.bind(
             "<Button-1>",
@@ -217,12 +225,12 @@ class Update(tk.Toplevel):
             ),
         )
         btn_edit.bind("<Button-1>", lambda event: self.destroy(), add="+")
-        self.btn_cancel.destroy()
+        self.btn_add.destroy()
 
     def default_data(self):
         self.parent.db.cursor.execute(
-        "SELECT * FROM employees WHERE id=?",
-        self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
+            "SELECT * FROM employees WHERE id=?",
+            self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
         )
         row = self.parent.db.cursor.fetchone()
         self.entry_name.insert(0, row[1])
@@ -230,7 +238,7 @@ class Update(tk.Toplevel):
         self.entry_phone.insert(0, row[3])
         self.entry_salary.insert(0, row[4])
 
-
+# создание окна функции поиска
 class Search(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -263,6 +271,8 @@ class Search(tk.Toplevel):
         )
         search_btn.bind("<Button-1>", lambda event: self.destroy(), add="+")
 
+
+ # структура базы данных
 class DB:
     def __init__(self):
         self.conn = sqlite3.connect("employees.db")
@@ -273,7 +283,7 @@ class DB:
                 name TEXT NOT NULL UNIQUE,
                 phone TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL UNIQUE,
-                salary REAL
+                salary REAL NOT NULL
             )"""
         )
         self.conn.commit()
@@ -284,7 +294,6 @@ class DB:
             (name, phone, email, salary)
         )
         self.conn.commit()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
