@@ -19,7 +19,7 @@ class Main(tk.Frame):
             bg="#d7d8e0", 
             bd=0, 
             image=self.add_img, 
-            command=self.open_win
+            command=self.open_add_win
         )
         btn_open_win.pack(side=tk.LEFT)
 
@@ -92,7 +92,7 @@ class Main(tk.Frame):
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
 
-    def open_win(self):
+    def open_add_win(self):
         Add(self)
 
     def open_update_win(self):
@@ -171,7 +171,6 @@ class Add(tk.Toplevel):
                 self.entry_salary.get()
             ),
         )
-
 
 class Update(tk.Toplevel):
     def __init__(self, parent):
