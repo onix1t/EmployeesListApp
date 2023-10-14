@@ -10,12 +10,12 @@ class Main(tk.Frame):
         self.db = db
         self.view_records()
 
-    def init_main(self): 
+    def init_main(self):
         toolbar = tk.Frame(bg="#d7d8e0", bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
         
         # кнопка добавления
-        self.add_img = tk.PhotoImage(file="./img/add.png", height=50, width=50) 
+        self.add_img = tk.PhotoImage(file="./img/add.png", height=50, width=50)
         btn_open_add_win = tk.Button(
             toolbar, 
             bg="#d7d8e0", 
@@ -23,10 +23,10 @@ class Main(tk.Frame):
             image=self.add_img, 
             command=self.open_add_win
         )
-        btn_open_add_win(side=tk.LEFT)
+        btn_open_add_win.pack(side=tk.LEFT)
 
         # кнопка обновления
-        self.update_img = tk.PhotoImage(file="./img/update.png", height=50, width=50) 
+        self.update_img = tk.PhotoImage(file="./img/update.png", height=50, width=50)
         btn_edit_win = tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -35,9 +35,9 @@ class Main(tk.Frame):
             command=self.open_update_win,
         )
         btn_edit_win.pack(side=tk.LEFT)
-        
+
         # кнопка поиска
-        self.search_img = tk.PhotoImage(file="./img/search.png", height=50, width=50) 
+        self.search_img = tk.PhotoImage(file="./img/search.png", height=50, width=50)
         btn_search_win= tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -48,7 +48,7 @@ class Main(tk.Frame):
         btn_search_win.pack(side=tk.LEFT)
 
         # кнопка удаления
-        self.delete_img = tk.PhotoImage(file="./img/delete.png", height=50, width=50) # кнопка удаления
+        self.delete_img = tk.PhotoImage(file="./img/delete.png", height=50, width=50)
         btn_delete = tk.Button(
             toolbar,
             bg="#d7d8e0",
@@ -66,7 +66,7 @@ class Main(tk.Frame):
             show="headings"
         )
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH)
-        
+
         # полоса прокрутки
         self.scroll = ttk.Scrollbar(
             self, 
@@ -89,8 +89,11 @@ class Main(tk.Frame):
         self.tree.heading("phone", text="Телефон")
         self.tree.heading("email", text="E-mail")
         self.tree.heading("salary", text="Зарплата")
-
+    
     # считывание и добавление данных
+    def open_add_win(self):
+        Add(self)
+
     def records(self, name, phone, email, salary):
         self.db.insert_data(name, phone, email, salary)
         self.view_records()
@@ -99,9 +102,6 @@ class Main(tk.Frame):
         self.db.cursor.execute("SELECT * FROM employees")
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
-
-    def open_add_win(self):
-        Add(self)
 
     def open_update_win(self):
         Update(self)
@@ -137,9 +137,9 @@ class Add(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.init_child()
+        self.init_add()
 
-    def init_child(self):
+    def init_add(self):
         self.title("Добавление контакта")
         self.geometry("400x220")
         self.resizable(False, False)
@@ -171,6 +171,7 @@ class Add(tk.Toplevel):
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=205, y=160)
 
+
         self.btn_add.bind(
             "<Button-1>",
             lambda event: self.parent.records(
@@ -183,8 +184,8 @@ class Add(tk.Toplevel):
 class Update(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.init_edit()
-        self.default_data()
 
     def init_edit(self):
         self.title("Редактирование контакта")
@@ -215,7 +216,7 @@ class Update(tk.Toplevel):
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=220, y=160)
 
-        btn_edit = ttk.Button(self, text="Редактировать")
+        btn_edit = ttk.Button(self, text="Редактировать", command=self.destroy)
         btn_edit.place(x=125, y=160)
         btn_edit.bind(
             "<Button-1>",
@@ -225,12 +226,12 @@ class Update(tk.Toplevel):
             ),
         )
         btn_edit.bind("<Button-1>", lambda event: self.destroy(), add="+")
-        self.btn_add.destroy()
+        self.btn_cancel.destroy()
 
     def default_data(self):
         self.parent.db.cursor.execute(
-            "SELECT * FROM employees WHERE id=?",
-            self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
+        "SELECT * FROM employees WHERE id=?",
+        self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
         )
         row = self.parent.db.cursor.fetchone()
         self.entry_name.insert(0, row[1])
@@ -271,8 +272,7 @@ class Search(tk.Toplevel):
         )
         search_btn.bind("<Button-1>", lambda event: self.destroy(), add="+")
 
-
- # структура базы данных
+# структура базы данных
 class DB:
     def __init__(self):
         self.conn = sqlite3.connect("employees.db")
@@ -283,7 +283,7 @@ class DB:
                 name TEXT NOT NULL UNIQUE,
                 phone TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL UNIQUE,
-                salary REAL NOT NULL
+                salary REAL
             )"""
         )
         self.conn.commit()
@@ -294,6 +294,7 @@ class DB:
             (name, phone, email, salary)
         )
         self.conn.commit()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
