@@ -82,8 +82,6 @@ class Main(tk.Frame):
         self.tree.heading("email", text="E-mail")
         self.tree.heading("salary", text="Зарплата")
 
-    def open_win(self):
-        Child(self)
 
     def records(self, name, phone, email, salary):
         self.db.insert_data(name, phone, email, salary)
@@ -93,6 +91,9 @@ class Main(tk.Frame):
         self.db.cursor.execute("SELECT * FROM employees")
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
+
+    def open_win(self):
+        Add(self)
 
     def open_update_win(self):
         Update(self)
@@ -124,14 +125,14 @@ class Main(tk.Frame):
         [self.tree.insert("", "end", values=row) for row in self.db.cursor.fetchall()]
 
 
-class Child(tk.Toplevel):
+class Add(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.init_child()
+        self.init_add()
 
-    def init_child(self):
-        self.title("Добавить")
+    def init_add(self):
+        self.title("Добавление контакта")
         self.geometry("400x220")
         self.resizable(False, False)
 
@@ -175,8 +176,8 @@ class Child(tk.Toplevel):
 class Update(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.init_edit()
-        self.default_data()
 
     def init_edit(self):
         self.title("Редактирование контакта")
@@ -207,7 +208,7 @@ class Update(tk.Toplevel):
         self.btn_cancel = ttk.Button(self, text="Закрыть", command=self.destroy)
         self.btn_cancel.place(x=220, y=160)
 
-        btn_edit = ttk.Button(self, text="Редактировать")
+        btn_edit = ttk.Button(self, text="Редактировать", command=self.destroy)
         btn_edit.place(x=125, y=160)
         btn_edit.bind(
             "<Button-1>",
@@ -217,12 +218,12 @@ class Update(tk.Toplevel):
             ),
         )
         btn_edit.bind("<Button-1>", lambda event: self.destroy(), add="+")
-        self.btn_add.destroy()
+        self.btn_cancel.destroy()
 
     def default_data(self):
         self.parent.db.cursor.execute(
-            "SELECT * FROM employees WHERE id=?",
-            self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
+        "SELECT * FROM employees WHERE id=?",
+        self.parent.tree.set(self.parent.tree.selection()[0], "#1"),
         )
         row = self.parent.db.cursor.fetchone()
         self.entry_name.insert(0, row[1])
