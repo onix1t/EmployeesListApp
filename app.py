@@ -226,7 +226,6 @@ class Update(tk.Toplevel):
             ),
         )
         btn_edit.bind("<Button-1>", lambda event: self.destroy(), add="+")
-        self.btn_cancel.destroy()
 
     def default_data(self):
         self.parent.db.cursor.execute(
