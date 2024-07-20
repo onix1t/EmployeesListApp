@@ -1,2 +1,2 @@
 # EmployeesListApp
-Приложение 'Список сотрудников компании'
+A simple application, that helps you edit a small employee database.
